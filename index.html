@@ -190,42 +190,23 @@ footer .fbrand{font-family:'Playfair Display',serif;color:#fff;font-size:16px;le
 </style>
 </head>
 <body>
-<!-- GATE DE LOGIN -->
+<!-- GATE DE CADASTRO -->
 <div id="gate">
   <div class="gatecard">
     <div class="gbrand">ROMULO CORCINO</div>
-    <div id="gStepEmail">
-      <h3>Acesso exclusivo</h3>
-      <p>Informe seu e-mail para receber um link de acesso seguro.</p>
-      <input id="gEmail" type="email" placeholder="seu@email.com" autocomplete="email">
-      <button id="gSend" class="btn">Receber link de acesso</button>
-      <div class="gmsg" id="gMsgEmail"></div>
-    </div>
-    <div id="gStepSent" style="display:none">
-      <h3>Verifique seu e-mail 📩</h3>
-      <p>Enviamos um link de acesso para <b id="gSentTo"></b>. Abra o e-mail e clique no link para entrar (verifique também o spam).</p>
-      <button id="gBack" class="glink">Usar outro e-mail</button>
-    </div>
-    <div id="gStepSignup" style="display:none">
-      <h3>Complete seu cadastro</h3>
-      <p>Falta pouco — preencha para solicitar seu acesso.</p>
-      <input id="gNome" type="text" placeholder="Nome completo *">
-      <input id="gWpp" type="text" inputmode="tel" placeholder="WhatsApp (com DDD) *">
-      <input id="gCidade" type="text" placeholder="Cidade / UF">
-      <select id="gPat"><option value="">Faixa de patrimônio</option><option>Até R$50 mil</option><option>R$50 mil a R$200 mil</option><option>R$200 mil a R$1 milhão</option><option>Acima de R$1 milhão</option></select>
-      <select id="gObj"><option value="">Objetivo principal</option><option>Aposentadoria</option><option>Gerar renda</option><option>Crescimento do patrimônio</option><option>Reserva</option></select>
-      <select id="gJa"><option value="">Já investe hoje?</option><option>Sim</option><option>Não</option></select>
-      <select id="gOrig"><option value="">Como nos conheceu?</option><option>Instagram</option><option>Indicação</option><option>Google</option><option>YouTube</option><option>LinkedIn</option><option>Outro</option></select>
-      <label class="gcheck"><input id="gLgpd" type="checkbox"><span>Autorizo o contato e o uso dos meus dados para envio de informações e ofertas, conforme a LGPD. *</span></label>
-      <button id="gSave" class="btn">Solicitar acesso</button>
-      <div class="gmsg" id="gMsgSignup"></div>
-      <button id="gLogout1" class="glink">Sair</button>
-    </div>
-    <div id="gStepPending" style="display:none">
-      <h3>Cadastro recebido ✓</h3>
-      <p>Seu acesso está <b>em análise</b> e será liberado em breve. Assim que aprovado, é só voltar a esta página. Dúvidas? Fale no WhatsApp <b>(11) 98431-7900</b>.</p>
-      <button id="gLogout2" class="glink">Sair</button>
-    </div>
+    <h3>Acesso à carteira</h3>
+    <p>Preencha rápido para ver a carteira completa, o backtest e o simulador.</p>
+    <input id="gNome" type="text" placeholder="Nome completo *">
+    <input id="gEmail" type="email" placeholder="E-mail *" autocomplete="email">
+    <input id="gWpp" type="text" inputmode="tel" placeholder="WhatsApp com DDD *">
+    <input id="gCidade" type="text" placeholder="Cidade / UF">
+    <select id="gPat"><option value="">Faixa de patrimônio</option><option>Até R$50 mil</option><option>R$50 mil a R$200 mil</option><option>R$200 mil a R$1 milhão</option><option>Acima de R$1 milhão</option></select>
+    <select id="gObj"><option value="">Objetivo principal</option><option>Aposentadoria</option><option>Gerar renda</option><option>Crescimento do patrimônio</option><option>Reserva</option></select>
+    <select id="gJa"><option value="">Já investe hoje?</option><option>Sim</option><option>Não</option></select>
+    <select id="gOrig"><option value="">Como nos conheceu?</option><option>Instagram</option><option>Indicação</option><option>Google</option><option>YouTube</option><option>LinkedIn</option><option>Outro</option></select>
+    <label class="gcheck"><input id="gLgpd" type="checkbox"><span>Autorizo o contato e o uso dos meus dados para envio de informações e ofertas, conforme a LGPD. *</span></label>
+    <button id="gSave" class="btn">Acessar a carteira →</button>
+    <div class="gmsg" id="gMsg"></div>
   </div>
 </div>
 
@@ -840,56 +821,25 @@ document.getElementById("footContact").innerHTML=`<a class="cta-wpp" href="https
 selPF("MOD");
 </script>
 <script>
-/* ===== GATE DE LOGIN (Supabase) ===== */
+/* ===== GATE DE CADASTRO (sem login) ===== */
 (function(){
  const SB=window.supabase.createClient("https://oypanstcpeckdnxgzbgk.supabase.co","sb_publishable_T0ha2GBMMBqvFHeJOPjHUQ_wEt11m1t");
- const gate=document.getElementById("gate");
- const steps=["gStepEmail","gStepSent","gStepSignup","gStepPending"];
- const show=id=>steps.forEach(s=>document.getElementById(s).style.display=(s===id?"block":"none"));
+ const gate=document.getElementById("gate"),$=id=>document.getElementById(id);
  const openGate=()=>{gate.style.display="flex";document.body.style.overflow="hidden";};
  const closeGate=()=>{gate.style.display="none";document.body.style.overflow="";};
- const $=id=>document.getElementById(id);
- let routing=false;
- async function route(){
-  if(routing)return; routing=true;
-  try{
-   const {data:{session}}=await SB.auth.getSession();
-   if(!session){openGate();show("gStepEmail");return;}
-   const {data:lead}=await SB.from("leads").select("aprovado").eq("id",session.user.id).maybeSingle();
-   if(!lead){openGate();show("gStepSignup");return;}
-   if(lead.aprovado){closeGate();return;}
-   openGate();show("gStepPending");
-  }catch(e){openGate();show("gStepEmail");$("gMsgEmail").textContent="Erro de conexão: "+e.message;$("gMsgEmail").className="gmsg err";}
-  finally{routing=false;}
- }
- $("gSend").onclick=async()=>{
-  const email=$("gEmail").value.trim(),m=$("gMsgEmail");
-  if(!/.+@.+\..+/.test(email)){m.textContent="Digite um e-mail válido.";m.className="gmsg err";return;}
-  m.textContent="Enviando...";m.className="gmsg";$("gSend").disabled=true;
-  const {error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href.split("#")[0]}});
-  $("gSend").disabled=false;
-  if(error){m.textContent="Erro: "+error.message;m.className="gmsg err";return;}
-  $("gSentTo").textContent=email;show("gStepSent");
- };
- $("gBack").onclick=()=>show("gStepEmail");
+ if(localStorage.getItem("rc_lead_ok"))closeGate(); else openGate();
  $("gSave").onclick=async()=>{
-  const m=$("gMsgSignup");
-  const {data:{session}}=await SB.auth.getSession();
-  if(!session){m.textContent="Sessão expirou — recarregue a página.";m.className="gmsg err";return;}
-  if(!$("gNome").value.trim()||!$("gWpp").value.trim()||!$("gLgpd").checked){m.textContent="Preencha nome, WhatsApp e aceite o consentimento.";m.className="gmsg err";return;}
+  const m=$("gMsg");
+  const nome=$("gNome").value.trim(),email=$("gEmail").value.trim(),wpp=$("gWpp").value.trim();
+  if(!nome||!/.+@.+\..+/.test(email)||!wpp||!$("gLgpd").checked){m.textContent="Preencha nome, e-mail, WhatsApp e aceite o consentimento.";m.className="gmsg err";return;}
   m.textContent="Enviando...";m.className="gmsg";$("gSave").disabled=true;
-  const row={id:session.user.id,email:session.user.email,nome:$("gNome").value.trim(),whatsapp:$("gWpp").value.trim(),
-   cidade:$("gCidade").value.trim(),patrimonio:$("gPat").value,objetivo:$("gObj").value,ja_investe:$("gJa").value,
-   origem:$("gOrig").value,lgpd:true,aprovado:false};
+  const row={nome,email,whatsapp:wpp,cidade:$("gCidade").value.trim(),patrimonio:$("gPat").value,
+   objetivo:$("gObj").value,ja_investe:$("gJa").value,origem:$("gOrig").value,lgpd:true};
   const {error}=await SB.from("leads").insert(row);
   $("gSave").disabled=false;
-  if(error){m.textContent="Erro: "+error.message;m.className="gmsg err";return;}
-  show("gStepPending");
+  if(error){m.textContent="Erro ao salvar: "+error.message;m.className="gmsg err";return;}
+  localStorage.setItem("rc_lead_ok","1");closeGate();
  };
- const logout=async()=>{await SB.auth.signOut();location.reload();};
- $("gLogout1").onclick=logout;$("gLogout2").onclick=logout;
- SB.auth.onAuthStateChange(()=>route());
- route();
 })();
 </script>
 </body>
