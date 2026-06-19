@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carteira de ETFs · TAG Investimentos</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<style>
+:root{
+  --vinho:#630D24; --vinho2:#7d1530; --laranja:#FF8853; --amarelo:#FFBB00;
+  --verde:#477C88; --rosa:#ED5A6E; --off:#E6E4DB; --ink:#2a2024; --muted:#8a7f84;
+  --bg:#f6f4f1; --card:#ffffff; --line:#ece7e4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--vinho)}
+.wrap{max-width:960px;margin:0 auto;padding:0 18px}
+/* header */
+header{position:sticky;top:0;z-index:50;background:rgba(99,13,36,.97);backdrop-filter:blur(6px);
+  border-bottom:2px solid var(--laranja)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{color:#fff;font-weight:800;letter-spacing:2px;font-size:18px}
+.brand span{color:var(--laranja);font-weight:400;font-size:11px;letter-spacing:1.5px}
+.nav a{color:#fff;text-decoration:none;font-size:13px;opacity:.85;margin-left:18px}
+.nav a:hover{opacity:1;color:var(--laranja)}
+.navlinks{display:none}
+@media(min-width:720px){.navlinks{display:flex}}
+/* hero */
+.hero{background:linear-gradient(135deg,var(--vinho),var(--vinho2));color:#fff;padding:54px 0 60px}
+.hero h1{font-size:30px;font-weight:800;line-height:1.2;margin-bottom:12px}
+.hero p{font-size:16px;opacity:.92;max-width:640px}
+.hero .tag-period{margin-top:14px;font-size:13px;color:var(--laranja);font-weight:600}
+.btn{display:inline-block;background:var(--laranja);color:#fff;font-weight:700;border:none;cursor:pointer;
+  padding:13px 22px;border-radius:30px;font-size:15px;text-decoration:none;margin-top:22px;transition:.15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(255,136,83,.4)}
+@media(min-width:720px){.hero h1{font-size:40px}}
+/* sections */
+section{padding:46px 0}
+.sec-tag{color:var(--laranja);font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase}
+h2{color:var(--vinho);font-size:26px;font-weight:800;margin:6px 0 18px}
+h3{color:var(--vinho);font-size:18px;font-weight:700;margin:22px 0 8px}
+p.lead{color:#574d52;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;
+  box-shadow:0 2px 10px rgba(60,20,30,.04)}
+.grid{display:grid;gap:16px}
+@media(min-width:720px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}}
+/* quiz */
+.q{margin-bottom:18px}
+.q .qt{font-weight:700;margin-bottom:10px;color:var(--ink)}
+.opts{display:grid;gap:8px}
+.opt{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;font-size:14px;
+  transition:.12s;background:#fff;display:flex;align-items:center;gap:10px}
+.opt:hover{border-color:var(--laranja)}
+.opt.sel{border-color:var(--vinho);background:#fbf2f4}
+.opt .dot{width:16px;height:16px;border-radius:50%;border:2px solid #c9bfc3;flex:0 0 auto}
+.opt.sel .dot{border-color:var(--vinho);background:var(--vinho);box-shadow:inset 0 0 0 3px #fff}
+.result{display:none;margin-top:22px;border-left:5px solid var(--laranja);background:linear-gradient(135deg,#fff,#fff7f3)}
+.result.show{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+.result .pf{font-size:30px;font-weight:800;color:var(--vinho)}
+.metricrow{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+.metric{flex:1;min-width:120px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+.metric b{display:block;font-size:24px;color:var(--vinho)}
+.metric small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+/* tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.tab{border:1.5px solid var(--line);background:#fff;border-radius:24px;padding:9px 18px;cursor:pointer;font-weight:700;font-size:14px;color:var(--muted)}
+.tab.act{background:var(--vinho);color:#fff;border-color:var(--vinho)}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--vinho);font-size:11px;text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+td.r,th.r{text-align:right}
+.tk{font-weight:700;color:var(--ink)}
+.isento{color:var(--verde);font-weight:700;font-size:11px}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:8px;background:#f0eae6;color:#7a6f74;font-weight:600}
+.chartbox{position:relative;height:330px}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+.kpi{display:flex;align-items:baseline;gap:8px}
+.kpi b{font-size:22px;color:var(--vinho)}
+ul.clean{margin:8px 0 8px 18px}ul.clean li{margin-bottom:7px;color:#574d52;font-size:14.5px}
+.callout{background:#fbf2f4;border:1px solid #f0d9df;border-radius:12px;padding:14px 16px;font-size:14px;color:#6a3a47;margin-top:12px}
+footer{background:var(--vinho);color:#e8d8dc;padding:28px 0;font-size:12.5px}
+footer a{color:var(--laranja)}
+.disc{font-size:11.5px;color:#cdbcc1;margin-top:8px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <div class="brand">TAG <span>INVESTIMENTOS</span></div>
+  <div class="navlinks">
+    <a href="#perfil">Meu perfil</a>
+    <a href="#carteiras">Carteiras</a>
+    <a href="#backtest">Backtest</a>
+    <a href="#racional">Racional</a>
+  </div>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <div class="sec-tag" style="color:var(--laranja)">Carteira 100% negociada em bolsa</div>
+  <h1>Carteira de ETFs para Pessoa Física</h1>
+  <p>Quatro perfis de investidor replicados com ETFs e fundos listados isentos — foco em retorno líquido de imposto e baixo drawdown. Descubra seu perfil em 1 minuto e veja a carteira sugerida, com backtest contra o CDI.</p>
+  <div class="tag-period" id="heroPeriod"></div>
+  <a class="btn" href="#perfil">Descobrir meu perfil →</a>
+</div></div>
+
+<!-- QUIZ -->
+<section id="perfil"><div class="wrap">
+  <div class="sec-tag">Passo 1</div><h2>Qual é o seu perfil?</h2>
+  <p class="lead">Responda 6 perguntas rápidas. O resultado aparece na hora — nenhum dado é enviado, tudo roda no seu navegador.</p>
+  <div class="card" id="quizCard"></div>
+  <div class="card result" id="result"></div>
+</div></section>
+
+<!-- CARTEIRAS -->
+<section id="carteiras" style="background:#fff"><div class="wrap">
+  <div class="sec-tag">Passo 2</div><h2>As carteiras</h2>
+  <p class="lead">Composição por perfil. Os sleeves marcados <span class="isento">ISENTO</span> são fundos listados isentos de IR (FII, FI-Infra, FIAGRO) — negociados em bolsa como um ETF.</p>
+  <div class="tabs" id="cartTabs"></div>
+  <div class="grid g2">
+    <div class="card"><div class="chartbox" style="height:300px"><canvas id="donut"></canvas></div></div>
+    <div class="card" style="overflow-x:auto"><div id="cartTable"></div></div>
+  </div>
+</div></section>
+
+<!-- BACKTEST -->
+<section id="backtest"><div class="wrap">
+  <div class="sec-tag">Passo 3</div><h2>Backtest contra o CDI</h2>
+  <p class="lead">Crescimento de R$100 com proventos reinvestidos. Período de Selic alta — o CDI rendeu muito, então é uma régua difícil. Valores <b>brutos</b> no gráfico de linha; o efeito do IR aparece logo abaixo.</p>
+  <div class="card"><div class="chartbox" style="height:360px"><canvas id="lineChart"></canvas></div>
+    <div class="note" id="lineNote"></div></div>
+
+  <div class="grid g4" id="kpiCards" style="margin-top:16px"></div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h3 style="margin-top:0">Retorno em % do CDI (líquido de IR)</h3>
+      <div class="chartbox" style="height:300px"><canvas id="cdiBar"></canvas></div>
+      <div class="note">Líquido: isentos 0% · ETFs tributados 15% · CDI 15%. Como ~30% da carteira é isento e o CDI é 100% tributado, a vantagem aumenta depois do imposto.</div></div>
+    <div class="card"><h3 style="margin-top:0">Mapa risco × retorno por ativo</h3>
+      <div class="chartbox" style="height:300px"><canvas id="scatter"></canvas></div>
+      <div class="note">Risco = <b>Ulcer Index</b> (profundidade × duração das quedas). Ideal: canto superior esquerdo.</div></div>
+  </div>
+</div></section>
+
+<!-- RACIONAL -->
+<section id="racional" style="background:#fff"><div class="wrap">
+  <div class="sec-tag">Entenda</div><h2>O racional da carteira</h2>
+
+  <h3>1. Só o que é negociado em bolsa</h3>
+  <p class="lead">Cada fundo da carteira modelo foi trocado pelo ETF mais próximo. Onde a estratégia é isenta de IR (CRI, CRA, debênture incentivada, FII), mantivemos um fundo listado isento — que negocia em bolsa igual a um ETF, mas preserva a isenção. Emissores priorizados: <b>Nubank</b> e <b>Itaú</b>.</p>
+
+  <h3>2. Eficiência fiscal é o diferencial</h3>
+  <p class="lead">ETF de renda fixa não tem come-cotas: o imposto fica todo para o resgate e o bruto compõe no caminho. Somado aos ~30% isentos, isso faz a carteira perder menos para o Leão do que um CDI puro — por isso ela ganha terreno justamente no resultado <b>líquido</b>.</p>
+
+  <h3>3. Risco medido pelo Ulcer Index</h3>
+  <p class="lead">Em vez de volatilidade, usamos o Ulcer Index, que pune quedas profundas e demoradas — o que realmente incomoda o investidor. A versão atual (v2) cortou a cripto pela metade e encurtou a parcela de inflação, reduzindo o Ulcer sem abrir mão de retorno.</p>
+
+  <div class="callout"><b>Leitura honesta:</b> nos perfis RF e Conservador a carteira <b>bate o CDI líquido</b> com drawdown de ~3%. Moderado e Agressivo ficam abaixo do CDI <i>nesta janela específica</i> (2021-2026 foi muito hostil ao risco no Brasil) — não por falha de construção. Com Selic caindo e bolsa/inflação performando, esses perfis tendem a virar o jogo.</p></div>
+
+  <h3>4. Ressalvas</h3>
+  <ul class="clean">
+    <li>Janela única de ~5 anos, começando perto do topo da cripto — penaliza os perfis de risco. Não é previsão de futuro.</li>
+    <li>ETFs novos (Nubank, LVOL11) foram aproximados pelos índices/ETFs de histórico longo que replicam.</li>
+    <li>Resultado in-sample: serve para entender o trade-off risco-retorno, não para maximizar performance passada.</li>
+    <li>Isenção válida enquanto a legislação atual permanecer.</li>
+  </ul>
+</div></section>
+
+<footer><div class="wrap">
+  <b>TAG Investimentos</b> · Carteira de ETFs para PF<br>
+  Fonte de dados: Comdinheiro · Período do backtest: <span id="footPeriod"></span>
+  <div class="disc">Material de caráter informativo e educacional, não constitui oferta, recomendação ou consultoria de investimentos. Rentabilidade passada não garante rentabilidade futura. O backtest usa índices/ETFs como proxy e premissas de tributação simplificadas. Consulte seu assessor antes de investir.</div>
+</div></footer>
+
+<script>
+const D=window.DATA;
+const COR={RF:"#477C88",CONS:"#FFBB00",MOD:"#FF8853",AGR:"#ED5A6E",CDI:"#222"};
+const PFNOME={RF:"Renda Fixa",CONS:"Conservador",MOD:"Moderado",AGR:"Agressivo"};
+const PFDESC={
+ RF:"Prioridade total à preservação e liquidez. Quase tudo em pós-fixado e crédito isento, com proteção de inflação. Oscilação mínima.",
+ CONS:"Segurança em primeiro lugar, com um toque de diversificação (bolsa, ouro e cripto em doses pequenas). Bate o CDI líquido com drawdown baixo.",
+ MOD:"Equilíbrio entre proteção e crescimento: mais inflação longa, ações e diversificadores, aceitando oscilações moderadas pelo retorno de longo prazo.",
+ AGR:"Foco em crescimento: maior fatia em ações, inflação longa e alternativos. Mais oscilação no curto prazo em troca de potencial no longo."};
+// carteira v2 (ticker-level) [RF,CONS,MOD,AGR]
+const CART=[
+ {t:"NCDI11",n:"Tesouro Selic (caixa)",c:"Caixa",e:"Nubank",is:0,w:[27.5,23.5,22.5,15.5]},
+ {t:"NLFA11",n:"Crédito CDI (Letras Financeiras)",c:"Crédito",e:"Nubank",is:0,w:[18,15,4.5,3]},
+ {t:"HGBR11",n:"Crédito IG global (hedge)",c:"Crédito",e:"Nubank",is:0,w:[9,6,1.5,1]},
+ {t:"HYBR11",n:"Crédito HY global (hedge)",c:"Crédito",e:"Nubank",is:0,w:[3,4,1.5,1]},
+ {t:"KNCR11 / KNCA11",n:"Crédito CDI isento (FII/FIAGRO papel)",c:"Crédito",e:"—",is:1,w:[17.5,13,14,12]},
+ {t:"B5P211",n:"NTN-B curta",c:"Inflação",e:"Itaú",is:0,w:[7.5,10,10,10]},
+ {t:"IMAB11",n:"NTN-B total",c:"Inflação",e:"Itaú",is:0,w:[6,9,13,14]},
+ {t:"IB5M11",n:"NTN-B longa",c:"Inflação",e:"Itaú",is:0,w:[1.5,2,2,2]},
+ {t:"KDIF11 / KNIP11",n:"FI-Infra (debênture incentivada)",c:"Inflação",e:"—",is:1,w:[5,5,10,15]},
+ {t:"ALZC11 / AZIN11",n:"FII de CRI",c:"Imobiliário",e:"—",is:1,w:[5,5,7.5,7.5]},
+ {t:"NBOV11",n:"Ibovespa BR+",c:"Ações",e:"Nubank",is:0,w:[0,1.5,3,4.5]},
+ {t:"LVOL11",n:"Ações baixa volatilidade",c:"Ações",e:"Nubank",is:0,w:[0,3,6,9]},
+ {t:"SPXR11",n:"S&P 500",c:"Ações",e:"—",is:0,w:[0,0.5,1,1.5]},
+ {t:"GOLD11",n:"Ouro",c:"Alternativos",e:"—",is:0,w:[0,2,2,2]},
+ {t:"NBIT11",n:"Bitcoin",c:"Alternativos",e:"Nubank",is:0,w:[0,0.25,0.75,1]},
+ {t:"HASH11",n:"Cripto índice",c:"Alternativos",e:"Hashdex",is:0,w:[0,0.25,0.75,1]},
+];
+const CLASSES=["Caixa","Crédito","Inflação","Imobiliário","Ações","Alternativos"];
+const CCOR={Caixa:"#477C88",Crédito:"#6BAEB8","Inflação":"#FFBB00","Imobiliário":"#caa24a","Ações":"#FF8853","Alternativos":"#ED5A6E"};
+const PFKEYS=["RF","CONS","MOD","AGR"];
+const idxPF={RF:0,CONS:1,MOD:2,AGR:3};
+
+document.getElementById("heroPeriod").textContent=`Backtest: ${D.periodo.ini} a ${D.periodo.fim} (~${D.periodo.anos} anos) · CDI no período: +${D.cdi.bruto}% bruto / +${D.cdi.liq}% líquido`;
+document.getElementById("footPeriod").textContent=`${D.periodo.ini} – ${D.periodo.fim}`;
+
+/* ---------- QUIZ ---------- */
+const QUESTIONS=[
+ {q:"Qual seu principal objetivo?",o:[["Preservar o capital, sem sustos",1],["Gerar renda com baixo risco",2],["Crescer o patrimônio no médio prazo",3],["Maximizar retorno, aceito oscilar",4]]},
+ {q:"Por quanto tempo pode deixar o dinheiro investido?",o:[["Menos de 1 ano",1],["1 a 3 anos",2],["3 a 5 anos",3],["Mais de 5 anos",4]]},
+ {q:"Se a carteira caísse 15% em poucos meses, você:",o:[["Resgataria tudo",1],["Resgataria parte",2],["Manteria, esperando recuperar",3],["Aproveitaria para investir mais",4]]},
+ {q:"Sua experiência com renda variável:",o:[["Nenhuma",1],["Pouca",2],["Média",3],["Alta",4]]},
+ {q:"Quanto este investimento representa do seu patrimônio?",o:[["Quase tudo",1],["A maior parte",2],["Uma parte relevante",3],["Uma parcela pequena",4]]},
+ {q:"Pode precisar resgatar de forma inesperada?",o:[["Sim, muito provável",1],["Talvez",2],["Pouco provável",3],["Não",4]]},
+];
+const answers=new Array(QUESTIONS.length).fill(null);
+const qc=document.getElementById("quizCard");
+QUESTIONS.forEach((qq,i)=>{
+ const d=document.createElement("div");d.className="q";
+ d.innerHTML=`<div class="qt">${i+1}. ${qq.q}</div>`;
+ const op=document.createElement("div");op.className="opts";
+ qq.o.forEach(([txt,val])=>{
+  const b=document.createElement("div");b.className="opt";
+  b.innerHTML=`<span class="dot"></span><span>${txt}</span>`;
+  b.onclick=()=>{answers[i]=val;[...op.children].forEach(c=>c.classList.remove("sel"));b.classList.add("sel");maybeShow();};
+  op.appendChild(b);
+ });
+ d.appendChild(op);qc.appendChild(d);
+});
+const btn=document.createElement("button");btn.className="btn";btn.textContent="Ver meu perfil";
+btn.onclick=showResult;qc.appendChild(btn);
+function maybeShow(){ if(answers.every(a=>a!==null)) btn.style.background="var(--vinho)"; }
+function classify(s){ if(s<=10)return"RF"; if(s<=15)return"CONS"; if(s<=20)return"MOD"; return"AGR"; }
+function showResult(){
+ if(answers.some(a=>a===null)){alert("Responda todas as 6 perguntas 🙂");return;}
+ const s=answers.reduce((a,b)=>a+b,0); const pf=classify(s);
+ const m=D.metrics.v2[pf];
+ const r=document.getElementById("result");
+ r.innerHTML=`<div class="sec-tag">Seu perfil</div>
+  <div class="pf">${PFNOME[pf]}</div>
+  <p style="margin-top:6px;color:#574d52">${PFDESC[pf]}</p>
+  <div class="metricrow">
+   <div class="metric"><b>${m.pctCdiLiq}%</b><small>do CDI (líquido)</small></div>
+   <div class="metric"><b>${m.liqTotal}%</b><small>retorno líquido (5a)</small></div>
+   <div class="metric"><b>${m.ulcer}</b><small>Ulcer Index</small></div>
+   <div class="metric"><b>${m.maxDD}%</b><small>maior queda</small></div>
+  </div>
+  <a class="btn" href="#carteiras" onclick="selPF('${pf}')">Ver a carteira ${PFNOME[pf]} →</a>`;
+ r.classList.add("show"); r.scrollIntoView({behavior:"smooth",block:"center"});
+ selPF(pf);
+}
+
+/* ---------- CARTEIRAS ---------- */
+let curPF="MOD"; let donutChart;
+const tabsEl=document.getElementById("cartTabs");
+PFKEYS.forEach(k=>{const b=document.createElement("div");b.className="tab";b.dataset.k=k;b.textContent=PFNOME[k];
+ b.onclick=()=>selPF(k);tabsEl.appendChild(b);});
+function selPF(k){
+ curPF=k; const ix=idxPF[k];
+ [...tabsEl.children].forEach(c=>c.classList.toggle("act",c.dataset.k===k));
+ // tabela
+ let rows=CART.filter(r=>r.w[ix]>0).sort((a,b)=>b.w[ix]-a.w[ix]);
+ let html=`<table><thead><tr><th>ETF</th><th>Classe</th><th class="r">Peso</th></tr></thead><tbody>`;
+ rows.forEach(r=>{html+=`<tr><td><span class="tk">${r.t}</span> ${r.is?'<span class="isento">ISENTO</span>':''}<br><span style="color:#8a7f84;font-size:11.5px">${r.n} · ${r.e}</span></td><td><span class="badge">${r.c}</span></td><td class="r" style="font-weight:700">${r.w[ix].toLocaleString('pt-BR')}%</td></tr>`;});
+ html+=`</tbody></table>`;
+ document.getElementById("cartTable").innerHTML=html;
+ // donut por classe
+ const byc={}; CLASSES.forEach(c=>byc[c]=0);
+ CART.forEach(r=>byc[r.c]+=r.w[ix]);
+ const labels=CLASSES.filter(c=>byc[c]>0), vals=labels.map(c=>byc[c]);
+ const data={labels,datasets:[{data:vals,backgroundColor:labels.map(c=>CCOR[c]),borderWidth:2,borderColor:"#fff"}]};
+ if(donutChart)donutChart.destroy();
+ donutChart=new Chart(document.getElementById("donut"),{type:"doughnut",data,
+  options:{plugins:{legend:{position:"bottom",labels:{font:{size:11},padding:10}},
+   title:{display:true,text:`${PFNOME[k]} — alocação por classe`,color:"#630D24",font:{size:14,weight:"bold"}},
+   tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed.toLocaleString('pt-BR')}%`}}},cutout:"58%"}});
+}
+
+/* ---------- LINE CHART ---------- */
+new Chart(document.getElementById("lineChart"),{type:"line",
+ data:{labels:D.labels,datasets:PFKEYS.concat("CDI").map(k=>({
+   label:k==="CDI"?`CDI (+${D.cdi.bruto}%)`:`${PFNOME[k]} (+${D.metrics.v2[k].retTotal}%)`,
+   data:D.series[k],borderColor:COR[k],borderWidth:k==="CDI"?2:2,borderDash:k==="CDI"?[6,4]:[],
+   pointRadius:0,tension:.15}))},
+ options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+  scales:{x:{ticks:{maxTicksLimit:7,color:"#8a7f84"},grid:{display:false}},
+   y:{ticks:{color:"#8a7f84",callback:v=>v},grid:{color:"#eee"},title:{display:true,text:"R$ (base 100)"}}},
+  plugins:{legend:{labels:{boxWidth:14,font:{size:12}}},
+   tooltip:{callbacks:{label:c=>` ${c.dataset.label.split(" (")[0]}: R$ ${c.parsed.y.toFixed(1)}`}}}}});
+document.getElementById("lineNote").textContent=`Bruto, proventos reinvestidos · ${D.periodo.ini} a ${D.periodo.fim}. RF e Conservador acompanham/superam o CDI; Moderado e Agressivo ficam abaixo nesta janela de Selic alta.`;
+
+/* ---------- KPI CARDS ---------- */
+const kc=document.getElementById("kpiCards");
+PFKEYS.forEach(k=>{const m=D.metrics.v2[k];
+ kc.innerHTML+=`<div class="card" style="border-top:4px solid ${COR[k]}">
+  <div style="font-weight:800;color:${COR[k]};margin-bottom:8px">${PFNOME[k]}</div>
+  <div class="kpi"><b>${m.pctCdiLiq}%</b><span style="color:#8a7f84;font-size:12px">do CDI líq.</span></div>
+  <div style="font-size:12.5px;color:#574d52;margin-top:6px">Líquido: <b>${m.liqTotal}%</b><br>Ulcer: <b>${m.ulcer}</b> · maxDD: <b>${m.maxDD}%</b></div></div>`;});
+
+/* ---------- % CDI BAR ---------- */
+new Chart(document.getElementById("cdiBar"),{type:"bar",
+ data:{labels:PFKEYS.map(k=>PFNOME[k]),datasets:[
+  {label:"Bruto",data:PFKEYS.map(k=>D.metrics.v2[k].pctCdiBruto),backgroundColor:"#477C88"},
+  {label:"Líquido de IR",data:PFKEYS.map(k=>D.metrics.v2[k].pctCdiLiq),backgroundColor:"#FF8853"}]},
+ options:{maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>v+"%",color:"#8a7f84"},grid:{color:"#eee"}},x:{grid:{display:false}}},
+  plugins:{legend:{labels:{boxWidth:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}% do CDI`}},
+   annotation:false}}});
+
+/* ---------- SCATTER ---------- */
+new Chart(document.getElementById("scatter"),{type:"scatter",
+ data:{datasets:[{label:"Ativos",data:D.scatter.map(s=>({x:s.ulcer,y:s.ret,nome:s.nome})),
+   backgroundColor:"#630D24",pointRadius:6,pointHoverRadius:8}]},
+ options:{maintainAspectRatio:false,
+  scales:{x:{title:{display:true,text:"Ulcer Index (menor = melhor)"},grid:{color:"#eee"}},
+   y:{title:{display:true,text:"Retorno a.a. (%)"},grid:{color:"#eee"}}},
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw.nome}: ${c.raw.y}% a.a. · Ulcer ${c.raw.x}`}}}}});
+
+selPF("MOD");
+</script>
+</body>
+</html>
