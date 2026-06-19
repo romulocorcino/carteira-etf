@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Carteira de ETFs · Romulo Corcino</title>
+<meta name="description" content="Carteira de ETFs para Pessoa Física — 4 perfis, retorno líquido de imposto e baixo drawdown, com backtest contra o CDI. Descubra seu perfil em 1 minuto.">
+<meta name="theme-color" content="#0F2238">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Carteira de ETFs · Romulo Corcino">
+<meta property="og:description" content="Descubra seu perfil de investidor e veja a carteira de ETFs sugerida, com backtest contra o CDI (líquido de IR).">
+<meta property="og:url" content="https://romulocorcinotag.github.io/carteira-etf/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='13' fill='%230F2238'/><text x='32' y='44' font-family='Georgia,serif' font-size='29' font-weight='700' fill='%23C2A14D' text-anchor='middle'>RC</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,6 +31,7 @@
   --bg:#F7F6F2; --card:#ffffff; --line:#e8e3d8;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
   background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:var(--vinho)}
@@ -49,6 +58,9 @@ header{position:sticky;top:0;z-index:50;background:rgba(15,34,56,.97);backdrop-f
 .btn{display:inline-block;background:var(--laranja);color:var(--vinho);font-weight:700;border:none;cursor:pointer;
   padding:13px 24px;border-radius:4px;font-size:15px;text-decoration:none;margin-top:24px;transition:.15s;letter-spacing:.4px}
 .btn:hover{background:var(--amarelo);transform:translateY(-1px);box-shadow:0 8px 22px rgba(194,161,77,.4)}
+.btn.muted{background:#d6d1c5;color:#fff;cursor:default}
+.btn.muted:hover{background:#d6d1c5;transform:none;box-shadow:none}
+.qprog{font-size:13px;color:var(--muted);font-weight:600;margin:4px 0 14px}
 @media(min-width:720px){.hero h1{font-size:42px}}
 /* sections */
 section{padding:50px 0}
@@ -213,6 +225,8 @@ footer .fbrand{font-family:'Playfair Display',serif;color:#fff;font-size:16px;le
 
 <script>
 const D=window.DATA;
+const F=v=>Number(v).toLocaleString('pt-BR',{maximumFractionDigits:1});
+const F2=v=>Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const COR={RF:"#3E6B7A",CONS:"#C2A14D",MOD:"#B06A3B",AGR:"#8E3B52",CDI:"#1c1c1c"};
 const PFNOME={RF:"Renda Fixa",CONS:"Conservador",MOD:"Moderado",AGR:"Agressivo"};
 const PFDESC={
@@ -243,7 +257,7 @@ const CCOR={Caixa:"#2C5B6B","Crédito":"#4E8294","Inflação":"#C2A14D","Imobili
 const PFKEYS=["RF","CONS","MOD","AGR"];
 const idxPF={RF:0,CONS:1,MOD:2,AGR:3};
 
-document.getElementById("heroPeriod").textContent=`Backtest: ${D.periodo.ini} a ${D.periodo.fim} (~${D.periodo.anos} anos) · CDI no período: +${D.cdi.bruto}% bruto / +${D.cdi.liq}% líquido`;
+document.getElementById("heroPeriod").textContent=`Backtest: ${D.periodo.ini} a ${D.periodo.fim} (~${F(D.periodo.anos)} anos) · CDI no período: +${F(D.cdi.bruto)}% bruto / +${F(D.cdi.liq)}% líquido`;
 document.getElementById("footPeriod").textContent=`${D.periodo.ini} – ${D.periodo.fim}`;
 
 /* QUIZ */
@@ -269,9 +283,13 @@ QUESTIONS.forEach((qq,i)=>{
  });
  d.appendChild(op);qc.appendChild(d);
 });
-const btn=document.createElement("button");btn.className="btn";btn.textContent="Ver meu perfil";
+const prog=document.createElement("div");prog.className="qprog";qc.appendChild(prog);
+const btn=document.createElement("button");btn.className="btn muted";btn.textContent="Ver meu perfil";
 btn.onclick=showResult;qc.appendChild(btn);
-function maybeShow(){ if(answers.every(a=>a!==null)) btn.style.background="var(--amarelo)"; }
+function maybeShow(){const n=answers.filter(a=>a!==null).length;
+ prog.textContent=`${n} de ${QUESTIONS.length} respondidas`;
+ btn.classList.toggle("muted",n<QUESTIONS.length);}
+maybeShow();
 function classify(s){ if(s<=10)return"RF"; if(s<=15)return"CONS"; if(s<=20)return"MOD"; return"AGR"; }
 function showResult(){
  if(answers.some(a=>a===null)){alert("Responda todas as 6 perguntas 🙂");return;}
@@ -282,10 +300,10 @@ function showResult(){
   <div class="pf">${PFNOME[pf]}</div>
   <p style="margin-top:6px;color:#4b5560">${PFDESC[pf]}</p>
   <div class="metricrow">
-   <div class="metric"><b>${m.pctCdiLiq}%</b><small>do CDI (líquido)</small></div>
-   <div class="metric"><b>${m.liqTotal}%</b><small>retorno líquido (5a)</small></div>
-   <div class="metric"><b>${m.ulcer}</b><small>Ulcer Index</small></div>
-   <div class="metric"><b>${m.maxDD}%</b><small>maior queda</small></div>
+   <div class="metric"><b>${F(m.pctCdiLiq)}%</b><small>do CDI (líquido)</small></div>
+   <div class="metric"><b>${F(m.liqTotal)}%</b><small>retorno líquido (5a)</small></div>
+   <div class="metric"><b>${F2(m.ulcer)}</b><small>Ulcer Index</small></div>
+   <div class="metric"><b>${F(m.maxDD)}%</b><small>maior queda</small></div>
   </div>
   <a class="btn" href="#carteiras" onclick="selPF('${pf}')">Ver a carteira ${PFNOME[pf]} →</a>`;
  r.classList.add("show"); r.scrollIntoView({behavior:"smooth",block:"center"});
@@ -333,7 +351,7 @@ function selPF(k){
 /* LINE CHART */
 new Chart(document.getElementById("lineChart"),{type:"line",
  data:{labels:D.labels,datasets:PFKEYS.concat("CDI").map(k=>({
-   label:k==="CDI"?`CDI (+${D.cdi.bruto}%)`:`${PFNOME[k]} (+${D.metrics.v2[k].retTotal}%)`,
+   label:k==="CDI"?`CDI (+${F(D.cdi.bruto)}%)`:`${PFNOME[k]} (+${F(D.metrics.v2[k].retTotal)}%)`,
    data:D.series[k],borderColor:COR[k],borderWidth:2,borderDash:k==="CDI"?[6,4]:[],
    pointRadius:0,tension:.15}))},
  options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
@@ -348,25 +366,34 @@ const kc=document.getElementById("kpiCards");
 PFKEYS.forEach(k=>{const m=D.metrics.v2[k];
  kc.innerHTML+=`<div class="card" style="border-top:3px solid ${COR[k]}">
   <div style="font-weight:800;color:${COR[k]};margin-bottom:8px">${PFNOME[k]}</div>
-  <div class="kpi"><b>${m.pctCdiLiq}%</b><span style="color:#8a949d;font-size:12px">do CDI líq.</span></div>
-  <div style="font-size:12.5px;color:#4b5560;margin-top:6px">Líquido: <b>${m.liqTotal}%</b><br>Ulcer: <b>${m.ulcer}</b> · maxDD: <b>${m.maxDD}%</b></div></div>`;});
+  <div class="kpi"><b>${F(m.pctCdiLiq)}%</b><span style="color:#8a949d;font-size:12px">do CDI líq.</span></div>
+  <div style="font-size:12.5px;color:#4b5560;margin-top:6px">Líquido: <b>${F(m.liqTotal)}%</b><br>Ulcer: <b>${F2(m.ulcer)}</b> · maxDD: <b>${F(m.maxDD)}%</b></div></div>`;});
 
-/* % CDI BAR */
+/* % CDI BAR — com rótulos de valor */
+const barLabels={id:"barLabels",afterDatasetsDraw(c){const ctx=c.ctx;ctx.save();
+ ctx.font="700 11px Inter,sans-serif";ctx.fillStyle="#16202B";ctx.textAlign="center";
+ c.data.datasets.forEach((ds,di)=>c.getDatasetMeta(di).data.forEach((bar,i)=>
+   ctx.fillText(F(ds.data[i])+"%",bar.x,bar.y-6)));ctx.restore();}};
 new Chart(document.getElementById("cdiBar"),{type:"bar",
  data:{labels:PFKEYS.map(k=>PFNOME[k]),datasets:[
-  {label:"Bruto",data:PFKEYS.map(k=>D.metrics.v2[k].pctCdiBruto),backgroundColor:"#3E6B7A"},
-  {label:"Líquido de IR",data:PFKEYS.map(k=>D.metrics.v2[k].pctCdiLiq),backgroundColor:"#C2A14D"}]},
- options:{maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>v+"%",color:"#8a949d"},grid:{color:"#eee"}},x:{grid:{display:false}}},
-  plugins:{legend:{labels:{boxWidth:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}% do CDI`}}}}});
+  {label:"Bruto",data:PFKEYS.map(k=>D.metrics.v2[k].pctCdiBruto),backgroundColor:"#3E6B7A",borderRadius:3},
+  {label:"Líquido de IR",data:PFKEYS.map(k=>D.metrics.v2[k].pctCdiLiq),backgroundColor:"#C2A14D",borderRadius:3}]},
+ options:{maintainAspectRatio:false,layout:{padding:{top:18}},
+  scales:{y:{ticks:{callback:v=>v+"%",color:"#8a949d"},grid:{color:"#eee"}},x:{grid:{display:false}}},
+  plugins:{legend:{labels:{boxWidth:14}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${F(c.parsed.y)}% do CDI`}}}},
+ plugins:[barLabels]});
 
-/* SCATTER */
+/* SCATTER — pontos coloridos por classe */
+const SCOR={CDI:"#2C5B6B",KNCR11:"#4E8294",B5P211:"#C2A14D",IMAB11:"#C2A14D",IB5M11:"#C2A14D",
+ KDIF11:"#C2A14D",KNIP11:"#A8843C",BOVA11:"#B06A3B",IVVB11:"#B06A3B",GOLD11:"#8E3B52",HASH11:"#8E3B52"};
 new Chart(document.getElementById("scatter"),{type:"scatter",
  data:{datasets:[{label:"Ativos",data:D.scatter.map(s=>({x:s.ulcer,y:s.ret,nome:s.nome})),
-   backgroundColor:"#0F2238",pointRadius:6,pointHoverRadius:8}]},
+   backgroundColor:D.scatter.map(s=>SCOR[s.t]||"#0F2238"),pointRadius:6,pointHoverRadius:9,
+   borderColor:"#fff",borderWidth:1}]},
  options:{maintainAspectRatio:false,
-  scales:{x:{title:{display:true,text:"Ulcer Index (menor = melhor)"},grid:{color:"#eee"}},
-   y:{title:{display:true,text:"Retorno a.a. (%)"},grid:{color:"#eee"}}},
-  plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw.nome}: ${c.raw.y}% a.a. · Ulcer ${c.raw.x}`}}}}});
+  scales:{x:{title:{display:true,text:"Ulcer Index (menor = melhor)",color:"#7d8893"},grid:{color:"#eee"}},
+   y:{title:{display:true,text:"Retorno a.a. (%)",color:"#7d8893"},grid:{color:"#eee"}}},
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw.nome}: ${F(c.raw.y)}% a.a. · Ulcer ${F(c.raw.x)}`}}}}});
 
 selPF("MOD");
 </script>
